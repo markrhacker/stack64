@@ -45,7 +45,7 @@ void VTposition(uint8_t row, uint8_t col) {
   Serial.write(';');
   Serial.print(col + 1);
   Serial.write('H');
-  M5.Lcd.setCursor((col * 6) + 40,  (row * 8) + 20);
+  M5.Lcd.setCursor((col * 6) + 40,  (row * 10) + 0);
 }
 
 void drawonscreenmenu() {
@@ -53,6 +53,36 @@ void drawonscreenmenu() {
   M5.Lcd.setCursor(50, 50);
   M5.Lcd.printf("SAVED");
   M5.Lcd.fillRect(50, 50, 50, 50, RED);
+}
+
+void drawscreen() {
+  uint16_t v_address = 0;
+  for (uint8_t row = 0; row < 25; row++) {
+    for (uint8_t col = 0; col < 40; col++) {
+
+      uint8_t petscii = RAM[v_address + 1024];
+/*
+      if (VRAM[v_address] != petscii) {
+        VRAM[v_address] = petscii;
+
+        if (((v_address - last_v_address) > 1) || (col_c >= 40)) {
+          VTposition(row, col);
+          col_c = col;
+        }
+*/
+        VTposition(row, col);
+        if (petscii < 32) petscii = petscii + 64;
+        M5.Lcd.print((char)(petscii));
+
+     //   last_v_address = v_address;
+
+    //  }
+
+  //    col_c++;
+      v_address++;
+    }
+
+  }
 }
 
 void readbutton() {
@@ -74,12 +104,11 @@ void readbutton() {
   }
 }
 
-uint8_t coverttouppercase(uint8_t dirtykeyval)
-{
+uint8_t coverttouppercase(uint8_t dirtykeyval) {
 
   uint8_t cleankeyval;
   if (dirtykeyval >= 0x61 && dirtykeyval < 0x7A) {
-    cleankeyval = dirtykeyval -32;
+    cleankeyval = dirtykeyval - 32;
   }
   else {
     cleankeyval = dirtykeyval;
@@ -142,12 +171,11 @@ void setup () {
   //delay(1000);
   M5.Lcd.fillScreen(BLUE); //clear screen
 
-
+  //drawscreen();
 }
 
 int counter = 1;
 int effc = 1;
-
 
 void loop () {
 
@@ -179,7 +207,7 @@ void loop () {
         if (((v_address - last_v_address) > 1) || (col_c >= 40)) {
           VTposition(row, col);
           col_c = col;
-        }else {M5.Lcd.fillScreen(BLUE);}
+        }
 
         if (petscii < 32) petscii = petscii + 64;
 
@@ -200,49 +228,3 @@ void loop () {
   M5.update();
 
 }
-
-/*
-  uint8_t curkey = 0;
-
-  //extern "C" {
-  uint16_t getpc();
-  uint8_t getop();
-  void exec6502(int32_t tickcount);
-  void reset6502();
-
-  void serout(uint8_t val) {
-  Serial.write(val);
-  }
-
-  uint8_t getkey() {
-  return(curkey);
-  }
-
-  void clearkey() {
-  curkey = 0;
-  }
-
-  void printhex(uint16_t val) {
-  Serial.print(val, HEX);
-  Serial.println();
-  }
-  //}
-
-  void setup () {
-  Serial.begin (115200);
-  Serial.println ();
-  Serial.println("Press key to starting 6502 CPU...");
-  reset6502();
-  while (!Serial.available()) {
-    delay(100);
-  }
-  }
-
-  void loop () {
-  exec6502(100); //if timing is enabled, this value is in 6502 clock ticks. otherwise, simply instruction count.
-  if (Serial.available()) {
-    curkey = Serial.read() & 0x7F;
-    //Serial.println("receive key");
-  }
-  }
-*/
