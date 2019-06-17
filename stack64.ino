@@ -166,8 +166,6 @@ void loop () {
 
     for (uint8_t col = 0; col < 40; col++) {
 
-
-
       readkeyboard();
 
       exec6502(200); //faster stack allows more ins per loop
@@ -178,12 +176,10 @@ void loop () {
 
         VRAM[v_address] = petscii;
 
-        if (((v_address - last_v_address) > 1)
-            || (col_c >= 40)) {
-
+        if (((v_address - last_v_address) > 1) || (col_c >= 40)) {
           VTposition(row, col);
           col_c = col;
-        }
+        }else {M5.Lcd.fillScreen(BLUE);}
 
         if (petscii < 32) petscii = petscii + 64;
 
