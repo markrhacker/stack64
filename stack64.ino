@@ -5,6 +5,7 @@
 
 uint8_t curkey = 0;
 bool onscreenmenu = false;
+bool redraw = false;
 
 uint8_t VRAM[1000];
 
@@ -59,12 +60,19 @@ void drawscreen() {
   uint16_t last_v_address = 0;
   uint8_t col_c = 0;
   uint8_t petscii;
-  bool redraw = false;
+  
   //M5.Lcd.fillScreen(BLUE); //clear screen
 
   //do I need a row redraw?
-  if (VRAM[1] != RAM[1 + 1024]) M5.Lcd.fillScreen(BLUE);
-  if (VRAM[1000-49] != RAM[(1000-40) + 1024]) M5.Lcd.fillScreen(BLUE);
+  //if (VRAM[1] != RAM[1 + 1024]) M5.Lcd.fillScreen(BLUE);
+  //if (VRAM[1000-49] != RAM[(1000-40) + 1024]) redraw = true;
+  if (VRAM[1] != RAM[1 + 1024]) redraw = true;
+  if (VRAM[0] != RAM[0 + 1024]) redraw = true;
+  
+  if (redraw) {
+    M5.Lcd.fillScreen(BLUE);
+    redraw = false;
+  }
 
   for (uint8_t row = 0; row < 25; row++) {
     for (uint8_t col = 0; col < 40; col++) {
@@ -128,6 +136,7 @@ void readkeyboard() {
         curkey = coverttouppercase(key_val);// key_val & 0x7F;
         RAM[198] = 1;
         RAM[631] = curkey;
+        if (curkey == 0x0D) redraw = true;
         /*if (key_val >= 0x20 && key_val < 0x7F) { // ASCII String
           Serial.print((char)key_val);
           //M5.Lcd.print((char)key_val);
