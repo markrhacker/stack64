@@ -62,13 +62,17 @@ void drawscreen() {
   bool redraw = false;
   //M5.Lcd.fillScreen(BLUE); //clear screen
 
+  //do I need a row redraw?
+  if (VRAM[1] != RAM[1 + 1024]) M5.Lcd.fillScreen(BLUE);
+  if (VRAM[1000-49] != RAM[(1000-40) + 1024]) M5.Lcd.fillScreen(BLUE);
+
   for (uint8_t row = 0; row < 25; row++) {
     for (uint8_t col = 0; col < 40; col++) {
         petscii = RAM[v_address + 1024];
-        if (VRAM[v_address] != petscii) {
-          VRAM[v_address] = petscii;
-          redraw = true;
-        }
+        //if (VRAM[v_address] != petscii) {
+        VRAM[v_address] = petscii;
+        //  redraw = true;
+        //}
         VTposition(row, col);
         if (petscii < 32) petscii = petscii + 64;
         M5.Lcd.print((char)(petscii));
@@ -76,7 +80,6 @@ void drawscreen() {
     }
   }
 
-  if(redraw) M5.Lcd.fillScreen(BLUE);
 }
 
 void readbuttons() {
@@ -170,7 +173,6 @@ void setup () {
 
 int counter = 1;
 int effc = 1;
-
 
 void loop(){
 
