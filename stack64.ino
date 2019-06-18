@@ -1,8 +1,5 @@
-// C64 Emulator, works with pic32MX and pic32MZ (SDZL board) under UECIDE
-// Pito's version, July 2014
+// C64 Emulator
 // http://forum.arduino.cc/index.php?topic=193216.msg1793065#msg1793065
-// Caps Lock must be ON!
-// Use terminal e.g. Teraterm 40x25 char
 
 #include <M5Stack.h>
 
@@ -39,13 +36,13 @@ void clearkey() {
   }*/
 
 void VTposition(uint8_t row, uint8_t col) {
-  Serial.write(27);
-  Serial.write('[');
-  Serial.print(row + 1);
-  Serial.write(';');
-  Serial.print(col + 1);
-  Serial.write('H');
-  M5.Lcd.setCursor((col * 6) + 40,  (row * 10) + 0);
+  //Serial.write(27);
+  //Serial.write('[');
+  //Serial.print(row + 1);
+  //Serial.write(';');
+  //Serial.print(col + 1);
+  //Serial.write('H');
+  M5.Lcd.setCursor((col * 6) + 40,  (row * 9) + 5);
 }
 
 void drawonscreenmenu() {
@@ -56,36 +53,33 @@ void drawonscreenmenu() {
 }
 
 void drawscreen() {
+  
+  M5.Lcd.setTextColor(WHITE);
   uint16_t v_address = 0;
+  uint16_t last_v_address = 0;
+  uint8_t col_c = 0;
+  uint8_t petscii;
+  bool redraw = false;
+  //M5.Lcd.fillScreen(BLUE); //clear screen
+
   for (uint8_t row = 0; row < 25; row++) {
     for (uint8_t col = 0; col < 40; col++) {
-
-      uint8_t petscii = RAM[v_address + 1024];
-/*
-      if (VRAM[v_address] != petscii) {
-        VRAM[v_address] = petscii;
-
-        if (((v_address - last_v_address) > 1) || (col_c >= 40)) {
-          VTposition(row, col);
-          col_c = col;
+        petscii = RAM[v_address + 1024];
+        if (VRAM[v_address] != petscii) {
+          VRAM[v_address] = petscii;
+          redraw = true;
         }
-*/
         VTposition(row, col);
         if (petscii < 32) petscii = petscii + 64;
         M5.Lcd.print((char)(petscii));
-
-     //   last_v_address = v_address;
-
-    //  }
-
-  //    col_c++;
-      v_address++;
+        v_address++;
     }
-
   }
+
+  if(redraw) M5.Lcd.fillScreen(BLUE);
 }
 
-void readbutton() {
+void readbuttons() {
 
   if (M5.BtnA.wasReleased()) {
     onscreenmenu = !onscreenmenu;
@@ -169,14 +163,27 @@ void setup () {
   Serial.println ("Starting CPU..");
   M5.Lcd.println("Starting CPU..");
   //delay(1000);
+  RAM[198] = 0;
+  exec6502(200000); 
   M5.Lcd.fillScreen(BLUE); //clear screen
-
-  //drawscreen();
 }
 
 int counter = 1;
 int effc = 1;
 
+
+void loop(){
+
+  M5.update();
+  readkeyboard();
+  exec6502(40*25*200); 
+  drawscreen();
+  readbuttons();
+  
+  
+}
+
+/*
 void loop () {
 
   uint16_t v_address = 0;
@@ -228,3 +235,4 @@ void loop () {
   M5.update();
 
 }
+*/
