@@ -46,12 +46,7 @@ void VTposition(uint8_t row, uint8_t col) {
   M5.Lcd.setCursor((col * 6) + 40,  (row * 9) + 5);
 }
 
-void drawonscreenmenu() {
-  M5.Lcd.setTextColor(WHITE);
-  M5.Lcd.setCursor(50, 50);
-  M5.Lcd.printf("SAVED");
-  M5.Lcd.fillRect(50, 50, 50, 50, RED);
-}
+
 
 void drawscreen() {
   
