@@ -6,14 +6,14 @@
 uint8_t curkey = 0;
 bool onscreenmenu = false;
 bool redraw = false;
-
-uint8_t VRAM[1000];
+bool mempull = false;
 
 #define KEYBOARD_I2C_ADDR     0X08
 #define KEYBOARD_INT          5
 #define RAM_SIZE 30816 //SOMEWHAT LESS THAN 32kB
 
 uint8_t RAM[RAM_SIZE];
+uint8_t VRAM[1000];
 
 uint16_t getpc();
 uint8_t getop();
@@ -45,8 +45,6 @@ void VTposition(uint8_t row, uint8_t col) {
   //Serial.write('H');
   M5.Lcd.setCursor((col * 6) + 40,  (row * 9) + 5);
 }
-
-
 
 void drawscreen() {
   
@@ -94,10 +92,23 @@ void readbuttons() {
     }
   }
   else if (M5.BtnB.wasReleased()) {
-
+    M5.Lcd.fillScreen(BLUE);
+    M5.Lcd.setCursor(0,0);
+    listDir(SPIFFS, "/", 0);
+    pullMemory(SPIFFS, "/memory.c64");
+    pullCPU(SPIFFS, "/cpu.c64");
+    delay(1000);
+    redraw = true;
   }
   else if (M5.BtnC.wasReleased()) {
-
+    M5.Lcd.fillScreen(BLUE);
+    M5.Lcd.setCursor(0,0);
+    pushMemory(SPIFFS, "/memory.c64");
+    pushCPU(SPIFFS, "/cpu.c64");
+    listDir(SPIFFS, "/", 0);
+    delay(1000);
+    redraw = true;
+    mempull = true;
   }
   else if (M5.BtnA.wasReleasefor(700)) {
     M5.powerOFF();
@@ -151,14 +162,21 @@ void setup () {
   M5.Lcd.setTextSize(1);                    // LCD text size 1
   pinMode(KEYBOARD_INT, INPUT_PULLUP);      // Keyboaerd
 
+  Serial.println("");
+  M5.Lcd.println("");
   //WiFi.mode(WIFI_OFF);
   Serial.begin (115200);
   Serial.setDebugOutput(true);
   //delay(10000);//needed to let user open terminal/monitor
+  
+  Serial.println("");
+  M5.Lcd.println("");
+  Serial.println("Persistence data..");
+  M5.Lcd.println("Persistence data..");
+  persistenceinit();
 
   Serial.println ("Prep VRAM..");
   M5.Lcd.println("Prep VRAM..");
-
   for (int i = 0; i < 1000; i++) {
     VRAM[i] = RAM[i + 1024];
   }
@@ -169,7 +187,7 @@ void setup () {
 
   Serial.println ("Starting CPU..");
   M5.Lcd.println("Starting CPU..");
-  //delay(1000);
+  //delay(2000);
   RAM[198] = 0;
   exec6502(200000); 
   M5.Lcd.fillScreen(BLUE); //clear screen
@@ -185,8 +203,7 @@ void loop(){
   exec6502(40*25*200); 
   drawscreen();
   readbuttons();
-  
-  
+
 }
 
 /*

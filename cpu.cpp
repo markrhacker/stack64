@@ -69,7 +69,6 @@ int32_t clockticks6502 = 0, clockgoal6502 = 0;
 uint16_t oldpc, ea, reladdr, value, result;
 uint8_t opcode, oldcpustatus, useaccum;
 
-//uint8_t RAM[RAM_SIZE];
 extern uint8_t RAM[RAM_SIZE];
 
 #include "rom.h"
@@ -111,7 +110,7 @@ uint8_t pull8() {
 
 void reset6502() {
   pc = (uint16_t)read6502(0xFFFC) | ((uint16_t)read6502(0xFFFD) << 8);
-  Serial.println("set pc");
+  //Serial.println("set pc");
   a = 0;
   x = 0;
   y = 0;
