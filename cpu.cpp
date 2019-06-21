@@ -8,7 +8,6 @@ extern void clearkey();
 
 #define NULL (void *) 0
 
-
 #define RAM_SIZE 30816      //This works
 //#define RAM_SIZE  34816   //32KB
 //#define RAM_SIZE 16384    // smaller
@@ -116,6 +115,39 @@ void reset6502() {
   y = 0;
   sp = 0xFD;
   cpustatus |= FLAG_CONSTANT;
+}
+
+struct CPUSTATUS {
+  uint16_t pc;
+  uint8_t sp; 
+  uint8_t a;
+  uint8_t x; 
+  uint8_t y;
+  uint8_t cpustatus;
+} ;
+
+extern CPUSTATUS getCPUSTATUS(){
+  CPUSTATUS cs;
+
+  cs.pc = pc;
+  cs.sp = sp; 
+  cs.a = a;
+  cs.x = x; 
+  cs.y = y;
+  cs.cpustatus = cpustatus;
+
+  return cs;
+}
+
+extern void setCPUSTATUS(CPUSTATUS cs){
+
+  pc = cs.pc;
+   sp = cs.sp; 
+   a = cs.a;
+   x = cs.x; 
+   y = cs.y;
+   cpustatus = cs.cpustatus;
+
 }
 
 //addressing mode functions, calculates effective addresses

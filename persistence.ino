@@ -4,6 +4,17 @@
 
 #define FORMAT_SPIFFS_IF_FAILED true
 
+struct CPUSTATUS {
+  uint16_t pc;
+  uint8_t sp; 
+  uint8_t a;
+  uint8_t x; 
+  uint8_t y;
+  uint8_t cpustatus;
+};
+extern CPUSTATUS getCPUSTATUS();
+extern void setCPUSTATUS(CPUSTATUS cs);
+
 void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
   Serial.printf("Listing directory: %s\r\n", dirname);
   M5.Lcd.printf("Listing directory: %s\r\n", dirname);
@@ -153,14 +164,29 @@ void pushCPU(fs::FS &fs, const char * path) {
   M5.Lcd.print("- writing" );
   uint32_t start = millis();
   //file.write(RAM, RAM_SIZE);
-  size_t i = 0;
-  //for(i=0;i<RAM_SIZE;i++) {
-  //  file.write(RAM[i]);
-  //}
+  size_t i = 0;  
+  CPUSTATUS cs = getCPUSTATUS();
+
+  Serial.println("");
+  M5.Lcd.println("");
+  Serial.printf("%u %u %u %u %u %u",cs.pc,cs.sp,cs.a,cs.x,cs.y, cs.cpustatus);
+  M5.Lcd.printf("%u %u %u %u %u %u",cs.pc,cs.sp,cs.a,cs.x,cs.y, cs.cpustatus);
+
+  uint8_t lowbit = ((cs.pc >> 8) & 0xFF);
+  uint8_t highbit = (cs.pc & 0xFF);
+  //file.write(cs.pc);
+  file.write(lowbit);
+  file.write(highbit);
+  file.write(cs.sp); 
+  file.write(cs.a);
+  file.write(cs.x); 
+  file.write(cs.y);
+  file.write(cs.cpustatus);
+
   Serial.println("");
   M5.Lcd.println("");
   uint32_t end = millis() - start;
-  Serial.printf(" - %u bytes written in %u ms\r\n", RAM_SIZE, end);
+  Serial.printf(" - %u bytes written in %u ms\r\n", sizeof(cs), end);
   M5.Lcd.println("");
   file.close();
 }
@@ -191,10 +217,25 @@ void pullCPU(fs::FS &fs, const char * path) {
 
   Serial.print("- reading" );
   M5.Lcd.print("- reading" );
-  //for (i = 0; i < file.size(); i++) //Read upto complete file size
-  //{
-  //  buf[i] = ((uint8_t)file.read()); 
- // }
+
+  CPUSTATUS cs;
+  uint8_t lowbit;
+  uint8_t highbit;
+  //cs.pc=file.read();
+  lowbit=file.read();
+  highbit=file.read();
+  cs.pc=((uint16_t)lowbit << 8) | highbit;
+  
+  cs.sp=file.read(); 
+  cs.a=file.read();
+  cs.x=file.read(); 
+  cs.y=file.read();
+  cs.cpustatus=file.read();
+
+  Serial.println("");
+  M5.Lcd.println("");
+  Serial.printf("%u %u %u %u %u %u",cs.pc,cs.sp,cs.a,cs.x,cs.y, cs.cpustatus);
+  M5.Lcd.printf("%u %u %u %u %u %u",cs.pc,cs.sp,cs.a,cs.x,cs.y, cs.cpustatus);
 
   Serial.println("");
   M5.Lcd.println("");
@@ -203,13 +244,9 @@ void pullCPU(fs::FS &fs, const char * path) {
   M5.Lcd.printf("- %u bytes read in %u ms\r\n", flen, end);
   file.close();
 
-  Serial.println("CPU push");
-  M5.Lcd.println("CPU push");
-  //for (i = 0; i < RAM_SIZE; i++) //Read upto complete file size
-  //{
-  //  uint8_t tmp = buf[i];
-  //  RAM[i] = tmp;
- // }
+  Serial.println("CPU Pull");
+  M5.Lcd.println("CPU Pull");
+  setCPUSTATUS(cs);
 }
 
 void persistenceinit() {
