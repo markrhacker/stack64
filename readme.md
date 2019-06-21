@@ -3,8 +3,13 @@
 Text only support
 Just really supports basic.
 
-Hold and release A to powerdown
+Hold and release A to powerdown\
+
 B to load the save state
+
 C the save the state
 
+
 ![image](image1.jpeg)
+![image](image2.jpeg)
+![image](image3.jpeg)
