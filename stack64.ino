@@ -58,9 +58,13 @@ void drawscreen() {
 
   //do I need a row redraw?
   //if (VRAM[1] != RAM[1 + 1024]) M5.Lcd.fillScreen(BLUE);
-  //if (VRAM[1000-49] != RAM[(1000-40) + 1024]) redraw = true;
-  if (VRAM[1] != RAM[1 + 1024]) redraw = true;
-  if (VRAM[0] != RAM[0 + 1024]) redraw = true;
+ // if (VRAM[1000-49] != RAM[(1000-49) + 1024]) redraw = true;
+ // if (VRAM[0] != RAM[0 + 1024]) redraw = true;
+ // if (VRAM[1] != RAM[1 + 1024]) redraw = true;
+ // if (VRAM[2] != RAM[2 + 1024]) redraw = true;
+//  if (VRAM[3] != RAM[3 + 1024]) redraw = true;
+//  if (VRAM[4] != RAM[4 + 1024]) redraw = true;
+//  if (VRAM[5] != RAM[5 + 1024]) redraw = true;
   
   if (redraw) {
     M5.Lcd.fillScreen(BLUE);
@@ -196,13 +200,28 @@ void setup () {
 int counter = 1;
 int effc = 1;
 
+bool needredraw()
+{
+  uint16_t v_address = 0;
+  //redraw = false;
+ for (uint8_t row = 0; row < 25; row++) {
+    for (uint8_t col = 0; col < 40; col++) {
+        if (VRAM[v_address] != RAM[v_address + 1024]) {
+          redraw = true;
+        }
+        v_address++;
+    }
+  }
+}
 void loop(){
 
   M5.update();
   readkeyboard();
-  exec6502(40*25*200); 
+  exec6502(40*25*200); //(40*25*100); 
+  needredraw();
   drawscreen();
   readbuttons();
+  //redraw = true;
 
 }
 

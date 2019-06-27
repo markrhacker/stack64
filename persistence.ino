@@ -15,6 +15,7 @@ struct CPUSTATUS {
 extern CPUSTATUS getCPUSTATUS();
 extern void setCPUSTATUS(CPUSTATUS cs);
 
+
 void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
   Serial.printf("Listing directory: %s\r\n", dirname);
   M5.Lcd.printf("Listing directory: %s\r\n", dirname);
@@ -247,6 +248,18 @@ void pullCPU(fs::FS &fs, const char * path) {
   Serial.println("CPU Pull");
   M5.Lcd.println("CPU Pull");
   setCPUSTATUS(cs);
+}
+
+
+int getSlotNumber(){
+
+}
+
+void setSlotNumber(int myid) {
+
+char text[1];
+  sprintf(text, "%d", myid);
+  writeFile(SPIFFS, "/slot.c64", text);
 }
 
 void persistenceinit() {
