@@ -105,9 +105,14 @@ void readbuttons() {
   setSlotNumber(SPIFFS, sid);
   Serial.printf("post slot: %u\r\n", sid);
 
-  M5.Lcd.setCursor(30,20);
+  M5.Lcd.setCursor(60,200);
   M5.Lcd.setTextSize(4);  
   M5.Lcd.printf("%u", sid);
+  M5.Lcd.setTextSize(2);  
+  M5.Lcd.setCursor(140,220);
+  M5.Lcd.printf("LOAD");
+  M5.Lcd.setCursor(240,220);
+  M5.Lcd.printf("SAVE", sid);
   M5.Lcd.setTextSize(1);  
   slotid = sid;
   
@@ -258,7 +263,7 @@ int counter = 1;
 int effc = 1;
 
 void drawslot(){
-  M5.Lcd.setCursor(300,220);
+  M5.Lcd.setCursor(305,220);
   M5.Lcd.setTextSize(2);  
   M5.Lcd.printf("%u", slotid);
   M5.Lcd.setTextSize(1);  
