@@ -7,6 +7,7 @@ uint8_t curkey = 0;
 bool onscreenmenu = false;
 bool redraw = false;
 bool mempull = false;
+uint8_t slotid;
 
 #define KEYBOARD_I2C_ADDR     0X08
 #define KEYBOARD_INT          5
@@ -43,7 +44,7 @@ void VTposition(uint8_t row, uint8_t col) {
   //Serial.write(';');
   //Serial.print(col + 1);
   //Serial.write('H');
-  M5.Lcd.setCursor((col * 6) + 40,  (row * 9) + 5);
+  M5.Lcd.setCursor((col * 6) + 40,  (row * 9) + 7);
 }
 
 void drawscreen() {
@@ -90,25 +91,77 @@ void drawscreen() {
 void readbuttons() {
 
   if (M5.BtnA.wasReleased()) {
+    /*
     onscreenmenu = !onscreenmenu;
     if (onscreenmenu) {
       drawonscreenmenu();
-    }
+    }*/
+  uint8_t sid;
+  sid = getSlotNumber(SPIFFS);
+  Serial.printf("pre slot: %u\r\n", sid);
+
+  sid = sid +1;
+  if (sid > 9) sid = 0;
+  setSlotNumber(SPIFFS, sid);
+  Serial.printf("post slot: %u\r\n", sid);
+
+  M5.Lcd.setCursor(30,20);
+  M5.Lcd.setTextSize(4);  
+  M5.Lcd.printf("%u", sid);
+  M5.Lcd.setTextSize(1);  
+  slotid = sid;
+  
+  //drawonscreenmenu();
+  delay(500);
+
+  redraw = true;
   }
   else if (M5.BtnB.wasReleased()) {
     M5.Lcd.fillScreen(BLUE);
     M5.Lcd.setCursor(0,0);
+
+    uint8_t sid;
+    sid = getSlotNumber(SPIFFS);
+    Serial.printf("Slot: %u\r\n", sid);
+    M5.Lcd.printf("Slot: %u\r\n", sid);
+
+    char str[100];
     listDir(SPIFFS, "/", 0);
-    pullMemory(SPIFFS, "/memory.c64");
-    pullCPU(SPIFFS, "/cpu.c64");
+
+    sprintf(str,"/memory.%u",sid);
+    Serial.println(str);
+    //pullMemory(SPIFFS, "/"+(char)sid"/memory.c64");
+    pullMemory(SPIFFS, str);
+    
+    sprintf(str,"/cpu.%u",sid);
+    Serial.println(str);
+    //pullCPU(SPIFFS, "/"+(char)sid"/cpu.c64");
+    pullCPU(SPIFFS, str);
+    
     delay(1000);
     redraw = true;
   }
   else if (M5.BtnC.wasReleased()) {
     M5.Lcd.fillScreen(BLUE);
     M5.Lcd.setCursor(0,0);
-    pushMemory(SPIFFS, "/memory.c64");
-    pushCPU(SPIFFS, "/cpu.c64");
+
+    uint8_t sid;
+    sid = getSlotNumber(SPIFFS);
+    Serial.printf("Slot: %u\r\n", sid);
+    M5.Lcd.printf("Slot: %u\r\n", sid);
+    
+    char str[100];
+    
+    sprintf(str,"/memory.%u",sid);
+    Serial.println(str); 
+    //pushMemory(SPIFFS, "/memory.c64");
+    pushMemory(SPIFFS, str);
+
+    sprintf(str,"/cpu.%u",sid);
+    Serial.println(str);
+    //pushCPU(SPIFFS, "/cpu.c64");
+    pushCPU(SPIFFS, str);
+    
     listDir(SPIFFS, "/", 0);
     delay(1000);
     redraw = true;
@@ -194,14 +247,24 @@ void setup () {
   //delay(2000);
   RAM[198] = 0;
   exec6502(200000); 
+  
+  slotid = getSlotNumber(SPIFFS);
+  Serial.printf("pre slot: %u\r\n", slotid);
+  
   M5.Lcd.fillScreen(BLUE); //clear screen
 }
 
 int counter = 1;
 int effc = 1;
 
-bool needredraw()
-{
+void drawslot(){
+  M5.Lcd.setCursor(300,220);
+  M5.Lcd.setTextSize(2);  
+  M5.Lcd.printf("%u", slotid);
+  M5.Lcd.setTextSize(1);  
+  }
+
+bool needredraw() {
   uint16_t v_address = 0;
   //redraw = false;
  for (uint8_t row = 0; row < 25; row++) {
@@ -213,15 +276,16 @@ bool needredraw()
     }
   }
 }
+
 void loop(){
 
   M5.update();
   readkeyboard();
-  exec6502(40*25*200); //(40*25*100); 
+  exec6502(40*25*100); //(40*25*200); 
   needredraw();
   drawscreen();
   readbuttons();
-  //redraw = true;
+  drawslot();
 
 }
 

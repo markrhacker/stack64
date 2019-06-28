@@ -6,9 +6,9 @@
 
 struct CPUSTATUS {
   uint16_t pc;
-  uint8_t sp; 
+  uint8_t sp;
   uint8_t a;
-  uint8_t x; 
+  uint8_t x;
   uint8_t y;
   uint8_t cpustatus;
 };
@@ -56,25 +56,6 @@ void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
   }
 }
 
-void writeFile(fs::FS &fs, const char * path, const char * message) {
-  Serial.printf("Writing file: %s\r\n", path);
-  M5.Lcd.printf("Writing file: %s\r\n", path);
-
-  File file = fs.open(path, FILE_WRITE);
-  if (!file) {
-    Serial.println("- failed to open file for writing");
-    M5.Lcd.println("- failed to open file for writing");
-    return;
-  }
-  if (file.print(message)) {
-    Serial.println("- file written");
-    M5.Lcd.println("- file written");
-  } else {
-    Serial.println("- frite failed");
-    M5.Lcd.println("- frite failed");
-  }
-}
-
 void pushMemory(fs::FS &fs, const char * path) {
   Serial.printf("Memory file I/O with %s\r\n", path);
   M5.Lcd.printf("Memory file I/O with %s\r\n", path);
@@ -91,7 +72,7 @@ void pushMemory(fs::FS &fs, const char * path) {
   uint32_t start = millis();
   //file.write(RAM, RAM_SIZE);
   size_t i = 0;
-  for(i=0;i<RAM_SIZE;i++) {
+  for (i = 0; i < RAM_SIZE; i++) {
     file.write(RAM[i]);
   }
   Serial.println("");
@@ -130,7 +111,7 @@ void pullMemory(fs::FS &fs, const char * path) {
   M5.Lcd.print("- reading" );
   for (i = 0; i < file.size(); i++) //Read upto complete file size
   {
-    buf[i] = ((uint8_t)file.read()); 
+    buf[i] = ((uint8_t)file.read());
   }
 
   Serial.println("");
@@ -147,7 +128,7 @@ void pullMemory(fs::FS &fs, const char * path) {
     uint8_t tmp = buf[i];
     RAM[i] = tmp;
   }
-  
+
 }
 
 void pushCPU(fs::FS &fs, const char * path) {
@@ -165,22 +146,22 @@ void pushCPU(fs::FS &fs, const char * path) {
   M5.Lcd.print("- writing" );
   uint32_t start = millis();
   //file.write(RAM, RAM_SIZE);
-  size_t i = 0;  
+  size_t i = 0;
   CPUSTATUS cs = getCPUSTATUS();
 
   Serial.println("");
   M5.Lcd.println("");
-  Serial.printf("%u %u %u %u %u %u",cs.pc,cs.sp,cs.a,cs.x,cs.y, cs.cpustatus);
-  M5.Lcd.printf("%u %u %u %u %u %u",cs.pc,cs.sp,cs.a,cs.x,cs.y, cs.cpustatus);
+  Serial.printf("%u %u %u %u %u %u", cs.pc, cs.sp, cs.a, cs.x, cs.y, cs.cpustatus);
+  M5.Lcd.printf("%u %u %u %u %u %u", cs.pc, cs.sp, cs.a, cs.x, cs.y, cs.cpustatus);
 
   uint8_t lowbit = ((cs.pc >> 8) & 0xFF);
   uint8_t highbit = (cs.pc & 0xFF);
   //file.write(cs.pc);
   file.write(lowbit);
   file.write(highbit);
-  file.write(cs.sp); 
+  file.write(cs.sp);
   file.write(cs.a);
-  file.write(cs.x); 
+  file.write(cs.x);
   file.write(cs.y);
   file.write(cs.cpustatus);
 
@@ -214,7 +195,7 @@ void pullCPU(fs::FS &fs, const char * path) {
   size_t flen = len;
   Serial.printf("- %u bytes\r\n", flen);
   M5.Lcd.printf("- %u bytes\r\n", flen);
- // static uint8_t buf[RAM_SIZE];
+  // static uint8_t buf[RAM_SIZE];
 
   Serial.print("- reading" );
   M5.Lcd.print("- reading" );
@@ -223,20 +204,20 @@ void pullCPU(fs::FS &fs, const char * path) {
   uint8_t lowbit;
   uint8_t highbit;
   //cs.pc=file.read();
-  lowbit=file.read();
-  highbit=file.read();
-  cs.pc=((uint16_t)lowbit << 8) | highbit;
-  
-  cs.sp=file.read(); 
-  cs.a=file.read();
-  cs.x=file.read(); 
-  cs.y=file.read();
-  cs.cpustatus=file.read();
+  lowbit = file.read();
+  highbit = file.read();
+  cs.pc = ((uint16_t)lowbit << 8) | highbit;
+
+  cs.sp = file.read();
+  cs.a = file.read();
+  cs.x = file.read();
+  cs.y = file.read();
+  cs.cpustatus = file.read();
 
   Serial.println("");
   M5.Lcd.println("");
-  Serial.printf("%u %u %u %u %u %u",cs.pc,cs.sp,cs.a,cs.x,cs.y, cs.cpustatus);
-  M5.Lcd.printf("%u %u %u %u %u %u",cs.pc,cs.sp,cs.a,cs.x,cs.y, cs.cpustatus);
+  Serial.printf("%u %u %u %u %u %u", cs.pc, cs.sp, cs.a, cs.x, cs.y, cs.cpustatus);
+  M5.Lcd.printf("%u %u %u %u %u %u", cs.pc, cs.sp, cs.a, cs.x, cs.y, cs.cpustatus);
 
   Serial.println("");
   M5.Lcd.println("");
@@ -250,16 +231,60 @@ void pullCPU(fs::FS &fs, const char * path) {
   setCPUSTATUS(cs);
 }
 
+uint8_t getSlotNumber(fs::FS &fs) {
 
-int getSlotNumber(){
+  uint8_t myid;
+  char* path = "/slot.c64";
+  // sprintf(text, "%d", myid);
+  //writeFile(SPIFFS, "/slot.c64", text);
+  //void writeFile(fs::FS &fs, const char * path, const char * message) {
+  Serial.printf("Reading file: %s\r\n", path);
+  //M5.Lcd.printf("uint8_t sid; file: %s\r\n", path);
 
+  File file = fs.open(path, FILE_READ);
+  if (!file) {
+    Serial.println("- failed to open file for reading");
+    //M5.Lcd.println("- failed to open file for reading");
+    return 0;
+  }
+  if (myid = (uint8_t)file.read()) {
+    Serial.println("- file read");
+    //M5.Lcd.println("- file read");
+  } else {
+    Serial.println("- read failed");
+    //M5.Lcd.println("- read failed");
+  }
+  Serial.printf("slot: %i\r\n", myid);
+  //M5.Lcd.printf("slot: %i\r\n", myid);
+  return myid;
 }
 
-void setSlotNumber(int myid) {
+void setSlotNumber(fs::FS &fs, uint8_t myid) {
 
-char text[1];
-  sprintf(text, "%d", myid);
-  writeFile(SPIFFS, "/slot.c64", text);
+  char text[1];
+  char* path = "/slot.c64";
+  // sprintf(text, "%d", myid);
+  //writeFile(SPIFFS, "/slot.c64", text);
+  //void writeFile(fs::FS &fs, const char * path, const char * message) {
+  Serial.printf("Writing file: %s\r\n", path);
+  //M5.Lcd.printf("Writing file: %s\r\n", path);
+
+  Serial.printf("set slot: %u\r\n", myid);
+  //M5.Lcd.printf("set slot: %u\r\n", myid);
+
+  File file = fs.open(path, FILE_WRITE);
+  if (!file) {
+    Serial.println("- failed to open file for writing");
+    //M5.Lcd.println("- failed to open file for writing");
+    return;
+  }
+  if (file.write(myid)) {
+    Serial.println("- file written");
+    //M5.Lcd.println("- file written");
+  } else {
+    Serial.println("- frite failed");
+    //M5.Lcd.println("- frite failed");
+  }
 }
 
 void persistenceinit() {
@@ -268,11 +293,16 @@ void persistenceinit() {
     M5.Lcd.println("SPIFFS Mount Failed");
     return;
   }
+  uint8_t sid;
   //writeFile(SPIFFS, "/hello.txt", "Hello ");
   //pushMemory(SPIFFS, "/memory.c64");
   //pullMemory(SPIFFS, "/memory.c64");
   listDir(SPIFFS, "/", 0);
 
-  
+  //setSlotNumber(SPIFFS, 4);
+  sid = getSlotNumber(SPIFFS);
+  Serial.printf("slot: %u\r\n", sid);
+  M5.Lcd.printf("slot: %u\r\n", sid);
+
 
 }
